@@ -29,11 +29,11 @@ public class Main extends Application {
 	private final Image[] sprites = new Image[] {};
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD;
 	private double velX, velY;
-	private final double maxX = 4.0;
+	private final double maxX = 3.0;
 	private final double maxY = 4.0;
-	private final double accelFac = 0.4;
-	private final int winHeight = 128;
-	private final int winWidth = 192;
+	private final double accelFac = 0.1;
+	private final int winHeight = 192;
+	private final int winWidth = 576;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
 	private int lvlWidth;
 	
@@ -70,7 +70,7 @@ public class Main extends Application {
 			primaryStage.setTitle("MarBro");
 			primaryStage.show();
 			
-			player.relocate(40, 64);
+			player.relocate(40, 96);
 						
 			AnimationTimer timer = new AnimationTimer() {
 				@Override
@@ -154,7 +154,7 @@ public class Main extends Application {
  		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
  		final double leftEdge = (player.getLayoutX() + velX);
  		final double upEdge = (player.getLayoutY() + velY);
- 		final double downEdge = (player.getLayoutY() - player.getBoundsInLocal().getHeight() + velY);
+ 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) + velY);
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
  		if(rightTile == 0)
@@ -172,7 +172,7 @@ public class Main extends Application {
  		if(((Math.round(downEdge) / 32) % lvlHeight) == 0)
  			for(int i = 0; i < (Math.round(downEdge) / 32) / lvlHeight; i++)
  				downTile += lvlHeight;
- 		 		
+ 		 	 		
  		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).getCollidable() 
  				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).getCollidable())
  			colR = true;
