@@ -70,18 +70,19 @@ public class Main extends Application {
 			primaryStage.setTitle("MarBro");
 			primaryStage.show();
 			
-			player.relocate(40, 96);
+			view.setVvalue(92);
+			player.relocate(40, 192);
 			jumped = false;
 						
 			AnimationTimer timer = new AnimationTimer() {
 				private int frameCount = 0;
 				@Override
 				public void handle(long now) {
-					if(frameCount % 2 != 0) {
-						frameCount = 0;
+					if(frameCount % 3 != 0) {
+						frameCount++;
 						return;
 					}
-					frameCount++;
+					frameCount = 0;
 					
 					double aX = 0.0;
 					double aY = 0.0;
@@ -181,7 +182,7 @@ public class Main extends Application {
  		colR=false;colL=false;colU=false;colD=false;
  		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
  		final double leftEdge = (player.getLayoutX() + velX);
- 		final double upEdge = (player.getLayoutY() - velY);
+ 		final double upEdge = (player.getLayoutY() - velY + 1);
  		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
@@ -202,17 +203,25 @@ public class Main extends Application {
  			colR = true;
  		
  		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).getCollidable() 
- 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable())
+ 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable() || leftEdge < accelFac)
  			colL = true;
  		
  		// might be garbage idk
+ 		rightTile = (int) (Math.round(rightEdge - 1) / 32);
+ 		if(rightTile == 0)
+ 				rightTile += (rightTile / lvlHeight) * lvlWidth;
+ 		leftTile = (int) (Math.round(leftEdge + 1) / 32);
+ 		if(leftTile == 0)
+ 				leftTile += (leftTile / lvlHeight) * lvlWidth;
  		downTile = (int) (Math.ceil(downEdge + 1) / 32);
- 		if(((Math.ceil(downEdge) / 32) % lvlHeight) == 0)
- 			for(int i = 0; i < (Math.ceil(downEdge) / 32) / lvlHeight; i++)
- 				downTile += lvlHeight;
+ 		if((downTile % lvlHeight) == 0)
+ 				downTile += (downTile / lvlHeight) * lvlHeight;
  		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).getCollidable() 
  				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).getCollidable())
  			colD = true;
+ 		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).getCollidable() 
+ 				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).getCollidable())
+ 			colU = true;
  		
  	}
  	
