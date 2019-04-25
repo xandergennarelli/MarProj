@@ -28,9 +28,9 @@ public class Main extends Application {
 	private final String[] sprNames = new String[] {"emptySky", "basicGround"};
 	private final Image[] sprites = new Image[] {};
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
-	private double velX, velY;
+	private double velX, velY, lastVX;
 	private final double maxX = 3.0;
-	private final double maxY = 3.0;
+	private final double maxY = 4.0;
 	private final double accelFac = 0.07;
 	private final int winHeight = 192;
 	private final int winWidth = 576;
@@ -139,33 +139,30 @@ public class Main extends Application {
  		if(Math.abs(velX) > mX) //ensures the player does not exceed max speed
  			velX = Math.copySign(mX, velX);
  		
+ 		//jump logic
  		if(velY <= mY * -1 || jumped) {
  			y = 0;
  			jumped = true;
  		}
- 		velY += accelFac * 2;
+ 		if(y == 0)
+ 			velY += accelFac * 3;
+ 		else
+ 			velY += accelFac * 2;
  		if(colD || velY < 0)
  			velY -= y * 4;
  		
- 		// literally scrap this whole section
-// 		if(velY < 0 || y == 0 || jumped)
-// 			velY += accelFac;
-// 		else if(!jumped && y > 0.0 && colD)
-// 			velY -= y;
-// 		else if(velY > 0 && !jumped && y > 0)
-// 			velY -= y;
-// 		if(Math.abs(velY) > mY) {
-// 			velY = Math.copySign(mY, velY);
-// 			if(velY > 0)
-// 				jumped = true;
-// 		}
-
+ 		//face the character sprite in the proper direction
  		if(velX < 0 - accelFac)
  			player.setScaleX(-1);
  		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
  		
  		//check for solid bodies that would stop movement
+ 		int offset;
+ 		if((colR || colL) && colD && (offset = (int) (player.getLayoutY() % 32)) < 16) {
+ 			movePlayer(0.0, -offset - 1);
+ 			velX = lastVX;
+ 		}
  		checkCollision(velX, velY);
  		if(colR && velX > 0) velX = 0;
  		if(colL && velX < 0) velX = 0;
@@ -184,6 +181,7 @@ public class Main extends Application {
  		final double leftEdge = (player.getLayoutX() + velX);
  		final double upEdge = (player.getLayoutY() - velY + 1);
  		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
+ 		lastVX = velX;
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
  		if(rightTile == 0)
@@ -206,7 +204,6 @@ public class Main extends Application {
  				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable() || leftEdge < accelFac)
  			colL = true;
  		
- 		// might be garbage idk
  		rightTile = (int) (Math.round(rightEdge - 1) / 32);
  		if(rightTile == 0)
  				rightTile += (rightTile / lvlHeight) * lvlWidth;
@@ -222,7 +219,6 @@ public class Main extends Application {
  		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).getCollidable() 
  				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).getCollidable())
  			colU = true;
- 		
  	}
  	
  	public ArrayList<Node> createBackground(String file) {
