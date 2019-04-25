@@ -186,20 +186,16 @@ public class Main extends Application {
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
  		if(rightTile == 0)
- 			for(int i = 0; i < (Math.round(rightEdge) / 32) / lvlHeight; i++)
- 				rightTile += lvlWidth;
+ 				rightTile += (rightTile / lvlHeight) * lvlWidth;
  		int leftTile = (int) (Math.round(leftEdge) / 32);
  		if(leftTile == 0)
- 			for(int i = 0; i < (Math.round(leftEdge) / 32) / lvlHeight; i++)
- 				leftTile += lvlWidth;
+ 				leftTile += (leftTile / lvlHeight) * lvlWidth;
  		int upTile = (int) (Math.round(upEdge) / 32);
- 		if(((Math.round(upEdge) / 32) % lvlHeight) == 0)
- 			for(int i = 0; i < (Math.round(upEdge) / 32) / lvlHeight; i++)
- 				upTile += lvlHeight;
+ 		if((upTile % lvlHeight) == 0)
+ 				upTile += (upTile / lvlHeight) * lvlHeight;
  		int downTile = (int) (Math.ceil(downEdge) / 32);
- 		if(((Math.ceil(downEdge) / 32) % lvlHeight) == 0)
- 			for(int i = 0; i < (Math.ceil(downEdge) / 32) / lvlHeight; i++)
- 				downTile += lvlHeight;
+ 		if((downTile % lvlHeight) == 0)
+ 				downTile += (downTile / lvlHeight) * lvlHeight;
  		 	 		
  		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).getCollidable() 
  				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).getCollidable())
