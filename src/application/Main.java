@@ -27,11 +27,11 @@ public class Main extends Application {
 	private ArrayList<Node> background;
 	private final String[] sprNames = new String[] {"emptySky", "basicGround"};
 	private final Image[] sprites = new Image[] {};
-	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD;
+	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY;
 	private final double maxX = 3.0;
 	private final double maxY = 4.0;
-	private final double accelFac = 0.1;
+	private final double accelFac = 0.07;
 	private final int winHeight = 192;
 	private final int winWidth = 576;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
@@ -71,6 +71,7 @@ public class Main extends Application {
 			primaryStage.show();
 			
 			player.relocate(40, 96);
+			jumped = false;
 						
 			AnimationTimer timer = new AnimationTimer() {
 				@Override
@@ -78,12 +79,14 @@ public class Main extends Application {
 					double aX = 0.0;
 					double aY = 0.0;
 					double mX = maxX;
+					double mY = maxY;
 					
 					if(mvRight) aX += accelFac;
 					if(mvLeft) aX -= accelFac;
+					if(jumping) aY += accelFac;
 					if(sprinShoo) mX *= 1.6;
 					
-					accelerate(aX, aY, mX);
+					accelerate(aX, aY, mX, mY);
 				}
 			};
 			
@@ -105,7 +108,7 @@ public class Main extends Application {
 				@Override
 	            public void handle(KeyEvent event) {
 	                switch (event.getCode()) {
-	                    case UP:    jumping = false; break;
+	                    case UP:    jumping = false; jumped = true; break;
 	                    case DOWN:  ducking = false; break;
 	                    case LEFT:  mvLeft  = false; break;
 	                    case RIGHT: mvRight  = false; break;
@@ -118,31 +121,44 @@ public class Main extends Application {
 		} catch(Exception e) {e.printStackTrace();}
 	}
  	
- 	public void accelerate(double x, double y, double mX) {
+ 	public void accelerate(double x, double y, double mX, double mY) {
+ 		if(Math.abs(velX) < accelFac) //prevents weird drifting
+ 			velX = 0;
  		if(x == 0 && velX != 0) //decelerate the player when not pressing a movement key
- 			velX -= Math.copySign(accelFac, velX);
+ 			velX -= Math.copySign(accelFac, velX) * 2.3;
  		if(Math.abs(velX) < mX || Integer.signum((int) x) != Integer.signum((int) velX)) //checks if the player still is under the max speed and can accelerate
  			velX += x;
  		if(Math.abs(velX) > mX) //ensures the player does not exceed max speed
  			velX = Math.copySign(mX, velX);
  		
- 		//add jumping here plz	
- 		velY = 0;
- 		
- 		if(Math.abs(velX) < accelFac) velX = 0; //prevents weird drifting
- 		
- 		//check direction to flip the sprite while moving
- 		if(Integer.signum((int) velX) == -1)
+ 		// literally scrap this whole section
+// 		if(velY < 0 || y == 0 || jumped)
+// 			velY += accelFac;
+// 		else if(!jumped && y > 0.0 && colD)
+// 			velY -= y;
+// 		else if(velY > 0 && !jumped && y > 0)
+// 			velY -= y;
+// 		if(Math.abs(velY) > mY) {
+// 			velY = Math.copySign(mY, velY);
+// 			if(velY > 0)
+// 				jumped = true;
+// 		}
+
+ 		if(velX < 0 - accelFac)
  			player.setScaleX(-1);
- 		else if(Integer.signum((int) velX) == 1)
+ 		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
  		
  		//check for solid bodies that would stop movement
  		checkCollision(velX, velY);
  		if(colR && velX > 0) velX = 0;
  		if(colL && velX < 0) velX = 0;
- 		if(colU && velY > 0) velY = 0;
- 		if(colD && velY < 0) velY =0;
+ 		if(colU && velY < 0) velY = 0;
+ 		if(colD && velY > 0) velY = 0;
+ 		if(colD) jumped = false;
+
+ 		
+ 		System.out.println("" + colR + colL + colD + colU);
  		
  		movePlayer(velX, velY);
  	}
@@ -153,8 +169,8 @@ public class Main extends Application {
  		colR=false;colL=false;colU=false;colD=false;
  		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
  		final double leftEdge = (player.getLayoutX() + velX);
- 		final double upEdge = (player.getLayoutY() + velY);
- 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) + velY);
+ 		final double upEdge = (player.getLayoutY() - velY);
+ 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
  		if(rightTile == 0)
@@ -168,9 +184,9 @@ public class Main extends Application {
  		if(((Math.round(upEdge) / 32) % lvlHeight) == 0)
  			for(int i = 0; i < (Math.round(upEdge) / 32) / lvlHeight; i++)
  				upTile += lvlHeight;
- 		int downTile = (int) (Math.round(downEdge) / 32);
- 		if(((Math.round(downEdge) / 32) % lvlHeight) == 0)
- 			for(int i = 0; i < (Math.round(downEdge) / 32) / lvlHeight; i++)
+ 		int downTile = (int) (Math.ceil(downEdge) / 32);
+ 		if(((Math.ceil(downEdge) / 32) % lvlHeight) == 0)
+ 			for(int i = 0; i < (Math.ceil(downEdge) / 32) / lvlHeight; i++)
  				downTile += lvlHeight;
  		 	 		
  		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).getCollidable() 
@@ -180,6 +196,16 @@ public class Main extends Application {
  		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).getCollidable() 
  				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable())
  			colL = true;
+ 		
+ 		// might be garbage idk
+ 		downTile = (int) (Math.ceil(downEdge + 1) / 32);
+ 		if(((Math.ceil(downEdge) / 32) % lvlHeight) == 0)
+ 			for(int i = 0; i < (Math.ceil(downEdge) / 32) / lvlHeight; i++)
+ 				downTile += lvlHeight;
+ 		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).getCollidable() 
+ 				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).getCollidable())
+ 			colD = true;
+ 		
  	}
  	
  	public ArrayList<Node> createBackground(String file) {
