@@ -19,6 +19,7 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
 public class Main extends Application {
@@ -29,11 +30,11 @@ public class Main extends Application {
 	private final Image[] sprites = new Image[] {};
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
-	private final double maxX = 3.0;
-	private final double maxY = 4.0;
+	private final double maxX = 2.0;
+	private final double maxY = 3.0;
 	private final double accelFac = 0.07;
-	private final int winHeight = 192;
-	private final int winWidth = 576;
+	private final int winHeight = 480;
+	private final int winWidth = 640;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
 	private int lvlWidth;
 	
@@ -63,15 +64,17 @@ public class Main extends Application {
 			view.setVbarPolicy(ScrollBarPolicy.NEVER);
 			view.setContent(pBounds);
 			
+			StackPane layers = new StackPane();
+			layers.getChildren().add(view);
 			
-			Scene scene = new Scene(view,winWidth,winHeight);
+			Scene scene = new Scene(layers,winWidth,winHeight);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("MarBro");
 			primaryStage.show();
 			
 			view.setVvalue(92);
-			player.relocate(40, 192);
+			player.relocate(40, 288);
 			jumped = false;
 						
 			AnimationTimer timer = new AnimationTimer() {
@@ -145,11 +148,11 @@ public class Main extends Application {
  			jumped = true;
  		}
  		if(y == 0)
- 			velY += accelFac * 3;
+ 			velY += accelFac * 1.5;
  		else
- 			velY += accelFac * 2;
+ 			velY += accelFac;
  		if(colD || velY < 0)
- 			velY -= y * 4;
+ 			velY -= y * 2;
  		
  		//face the character sprite in the proper direction
  		if(velX < 0 - accelFac)
@@ -168,7 +171,7 @@ public class Main extends Application {
  		if(colL && velX < 0) velX = 0;
  		if(colU && velY < 0) velY = 0;
  		if(colD && velY > 0) velY = 0;
- 		if(colD) jumped = false;
+ 		if(colD && velY == 0) jumped = false;
  		
  		movePlayer(velX, velY);
  	}
