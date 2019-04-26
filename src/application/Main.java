@@ -71,7 +71,6 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("MarBro");
-			primaryStage.setResizable(false);
 			primaryStage.show();
 			
 			view.setVvalue(92);
