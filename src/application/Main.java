@@ -31,8 +31,8 @@ public class Main extends Application {
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
 	private final double maxX = 4.0;
-	private final double maxY = 3.0;
-	private final double accelFac = 0.07;
+	private final double maxY = 4.0;
+	private final double accelFac = 0.1;
 	private final int winHeight = 480;
 	private final int winWidth = 640;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
