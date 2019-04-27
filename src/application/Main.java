@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -27,21 +28,21 @@ public class Main extends Application {
 	private Image marSprite;
 	private Node player;
 	private ArrayList<Node> background;
-	private final Map<String, String> sprNames = new Map.of("emptySky", "basicGround");
+	private Map<Integer, String[]> sprNames = new TreeMap<>();
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
 	private final double maxX = 2.0;
 	private final double maxY = 3.0;
 	private final double accelFac = 0.07;
 	private final int winHeight = 480;
-	private final int winWidth = 640;
+	private final int winWidth = 632;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
 	private int lvlWidth;
 	
  	@Override
 	public void start(Stage primaryStage) {
 		try {
-			background = createBackground("sprites/map.txt");
+			background = createBackground("map");
 			ArrayList<Node> enemies = new ArrayList<>();
 			ArrayList<Node> foreground = new ArrayList<>();
 			ArrayList<Node> nodes = new ArrayList<>();
@@ -226,6 +227,8 @@ public class Main extends Application {
  	}
  	
  	public ArrayList<Node> createBackground(String file) {
+ 		sprNames.put(-65536, new String[] {"basicGround", "true"});
+ 		sprNames.put(-16711681, new String[] {"emptySky", "false"});
  		ArrayList <Node> bg= new ArrayList<>();
 //		int rowCount = 0;
 // 		try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {  
@@ -250,14 +253,18 @@ public class Main extends Application {
 //    		System.out.println("you should literally never see this");
 //    	}
 		
-		Image map = crSp("map");
+		Image map = crSp(file);
 		int h = (int) map.getHeight();
 		int w = (int) map.getWidth();
 		
-		for(int i = 0; i < h; i++)
-			for(int j = 0; j < w; j++)
-				bg.add(new Tile(crSp()))
-		
+		for(int i = 0; i < h; i++) {
+			System.out.println();
+			for(int j = 0; j < w; j++) {
+				Integer pixel = map.getPixelReader().getArgb(j, i);
+				bg.add(new Tile(crSp(sprNames.get(pixel)[0]), Boolean.parseBoolean(sprNames.get(pixel)[1])));
+				System.out.print(sprNames.get(pixel)[1]);
+			}
+		}
  		lvlHeight = h;
  		return bg;
  	}
