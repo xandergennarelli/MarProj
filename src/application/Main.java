@@ -30,9 +30,9 @@ public class Main extends Application {
 	private final Image[] sprites = new Image[] {};
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
-	private final double maxX = 4.0;
-	private final double maxY = 4.0;
-	private final double accelFac = 0.1;
+	private final double maxX = 2.0;
+	private final double maxY = 3.0;
+	private final double accelFac = 0.07;
 	private final int winHeight = 480;
 	private final int winWidth = 640;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
@@ -71,6 +71,7 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("MarBro");
+			primaryStage.setResizable(false);
 			primaryStage.show();
 			
 			view.setVvalue(92);
@@ -78,8 +79,14 @@ public class Main extends Application {
 			jumped = false;
 						
 			AnimationTimer timer = new AnimationTimer() {
+				private int frameCount = 0;
 				@Override
 				public void handle(long now) {
+					if(frameCount % 3 != 0) {
+						frameCount++;
+						return;
+					}
+					frameCount = 0;
 					
 					double aX = 0.0;
 					double aY = 0.0;
