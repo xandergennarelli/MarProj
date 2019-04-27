@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Scanner;
 
 import javafx.animation.AnimationTimer;
@@ -26,8 +27,7 @@ public class Main extends Application {
 	private Image marSprite;
 	private Node player;
 	private ArrayList<Node> background;
-	private final String[] sprNames = new String[] {"emptySky", "basicGround"};
-	private final Image[] sprites = new Image[] {};
+	private final Map<String, String> sprNames = new Map.of("emptySky", "basicGround");
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
 	private final double maxX = 2.0;
@@ -227,29 +227,38 @@ public class Main extends Application {
  	
  	public ArrayList<Node> createBackground(String file) {
  		ArrayList <Node> bg= new ArrayList<>();
-		int rowCount = 0;
- 		try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {  
-			String line = bufferedReader.readLine();
-    	    while(line != null) {
-    	    	rowCount++;
-    	    	Scanner item = new Scanner(line);
-    	    	item.useDelimiter(",");
-    	    	while(item.hasNext()) {
-        	    	String block = item.next();
-    	    		String name = sprNames[Integer.parseInt(block.substring(0, block.indexOf("|")))];
-    	    		boolean col = Boolean.parseBoolean(block.substring(block.indexOf("|") + 1));
-    	    		bg.add(new Tile(crSp(name), col));
-    	    	}
-    	    	line = bufferedReader.readLine();
-    	    }
-    	} catch (FileNotFoundException e) {
-    	    // exception handling
-    		System.out.println("WHAT DID YOU DO");
-    	} catch (IOException e) {
-    	    // exception handling
-    		System.out.println("you should literally never see this");
-    	}
- 		lvlHeight = rowCount;
+//		int rowCount = 0;
+// 		try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {  
+//			String line = bufferedReader.readLine();
+//    	    while(line != null) {
+//    	    	rowCount++;
+//    	    	Scanner item = new Scanner(line);
+//    	    	item.useDelimiter(",");
+//    	    	while(item.hasNext()) {
+//        	    	String block = item.next();
+//    	    		String name = sprNames[Integer.parseInt(block.substring(0, block.indexOf("|")))];
+//    	    		boolean col = Boolean.parseBoolean(block.substring(block.indexOf("|") + 1));
+//    	    		bg.add(new Tile(crSp(name), col));
+//    	    	}
+//    	    	line = bufferedReader.readLine();
+//    	    }
+//    	} catch (FileNotFoundException e) {
+//    	    // exception handling
+//    		System.out.println("WHAT DID YOU DO");
+//    	} catch (IOException e) {
+//    	    // exception handling
+//    		System.out.println("you should literally never see this");
+//    	}
+		
+		Image map = crSp("map");
+		int h = (int) map.getHeight();
+		int w = (int) map.getWidth();
+		
+		for(int i = 0; i < h; i++)
+			for(int j = 0; j < w; j++)
+				bg.add(new Tile(crSp()))
+		
+ 		lvlHeight = h;
  		return bg;
  	}
  	
