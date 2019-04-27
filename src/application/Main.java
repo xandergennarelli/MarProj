@@ -1,12 +1,7 @@
 package application;
-	
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.TreeMap;
 
 import javafx.animation.AnimationTimer;
@@ -22,7 +17,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 
 public class Main extends Application {
 	private Image marSprite;
@@ -48,14 +42,13 @@ public class Main extends Application {
 			ArrayList<Node> nodes = new ArrayList<>();
  			marSprite = new Image(getClass().getResourceAsStream("/smMario.png"));
 			player = new ImageView(marSprite);
-			
-			Group pBounds = new Group();
-			
+						
 			nodes.addAll(background);
 			nodes.addAll(enemies);
 			nodes.add(player);
 			nodes.addAll(foreground);
 			
+			Group pBounds = new Group();
 			pBounds.getChildren().addAll(nodes);
 			relocateBackground();
 			
@@ -230,41 +223,16 @@ public class Main extends Application {
  		sprNames.put(-65536, new String[] {"basicGround", "true"});
  		sprNames.put(-16711681, new String[] {"emptySky", "false"});
  		ArrayList <Node> bg= new ArrayList<>();
-//		int rowCount = 0;
-// 		try(BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {  
-//			String line = bufferedReader.readLine();
-//    	    while(line != null) {
-//    	    	rowCount++;
-//    	    	Scanner item = new Scanner(line);
-//    	    	item.useDelimiter(",");
-//    	    	while(item.hasNext()) {
-//        	    	String block = item.next();
-//    	    		String name = sprNames[Integer.parseInt(block.substring(0, block.indexOf("|")))];
-//    	    		boolean col = Boolean.parseBoolean(block.substring(block.indexOf("|") + 1));
-//    	    		bg.add(new Tile(crSp(name), col));
-//    	    	}
-//    	    	line = bufferedReader.readLine();
-//    	    }
-//    	} catch (FileNotFoundException e) {
-//    	    // exception handling
-//    		System.out.println("WHAT DID YOU DO");
-//    	} catch (IOException e) {
-//    	    // exception handling
-//    		System.out.println("you should literally never see this");
-//    	}
-		
 		Image map = crSp(file);
 		int h = (int) map.getHeight();
 		int w = (int) map.getWidth();
 		
-		for(int i = 0; i < h; i++) {
-			System.out.println();
+		for(int i = 0; i < h; i++)
 			for(int j = 0; j < w; j++) {
 				Integer pixel = map.getPixelReader().getArgb(j, i);
 				bg.add(new Tile(crSp(sprNames.get(pixel)[0]), Boolean.parseBoolean(sprNames.get(pixel)[1])));
-				System.out.print(sprNames.get(pixel)[1]);
 			}
-		}
+
  		lvlHeight = h;
  		return bg;
  	}
