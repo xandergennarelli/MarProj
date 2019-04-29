@@ -15,7 +15,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 
 public class Main extends Application {
@@ -52,11 +54,12 @@ public class Main extends Application {
 			pBounds.getChildren().addAll(nodes);
 			relocateBackground();
 			
-			ScrollPane view = new ScrollPane();
+			ScrollPane view = new ScrollPane() { public void requestFocus() {}};
 			view.setPrefSize(winWidth, winHeight);
 			view.setHbarPolicy(ScrollBarPolicy.NEVER);
 			view.setVbarPolicy(ScrollBarPolicy.NEVER);
 			view.setContent(pBounds);
+			view.addEventFilter(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {public void handle(ScrollEvent event) {event.consume();}});
 			
 			StackPane layers = new StackPane();
 			layers.getChildren().add(view);
