@@ -76,15 +76,8 @@ public class Main extends Application {
 			jumped = false;
 						
 			AnimationTimer timer = new AnimationTimer() {
-				private int frameCount = 0;
 				@Override
 				public void handle(long now) {
-					if(frameCount % 3 != 0) {
-						frameCount++;
-						return;
-					}
-					frameCount = 0;
-					
 					double aX = 0.0;
 					double aY = 0.0;
 					double mX = maxX;
