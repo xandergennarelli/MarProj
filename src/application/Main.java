@@ -134,15 +134,15 @@ public class Main extends Application {
  			velX = Math.copySign(mX, velX);
  		
  		//jump logic
- 		if(velY <= mY * -1 || jumped) {
+ 		if(velY <= mY * -1 || jumped) { //stops upward acceleration if the player reaches max jump speed or lets go of key
  			y = 0;
  			jumped = true;
  		}
- 		if(y == 0)
+ 		if(y == 0) //accelerates the player downwards if they are not accelerating upwards
  			velY += accelFac * 1.5;
- 		else
+ 		else //decelerates the player that is jumping after the acceleration is stopped above
  			velY += accelFac;
- 		if(colD || velY < 0)
+ 		if(colD || velY < 0) //accelerates the player if they are standing on something or they are already jumping and pressing the key
  			velY -= y * 2;
  		
  		//face the character sprite in the proper direction
@@ -151,20 +151,21 @@ public class Main extends Application {
  		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
  		
- 		//check for solid bodies that would stop movement
- 		int offset;
+ 		
+ 		int offset;	//correct ground clipping after a fast fall
  		if((colR || colL) && colD && (offset = (int) (player.getLayoutY() % 32)) < 16) {
  			movePlayer(0.0, -offset - 1);
  			velX = lastVX;
  		}
- 		checkCollision(velX, velY);
+ 		
+ 		checkCollision(velX, velY); //check for solid bodies that would stop movement
  		if(colR && velX > 0) velX = 0;
  		if(colL && velX < 0) velX = 0;
  		if(colU && velY < 0) velY = 0;
  		if(colD && velY > 0) velY = 0;
  		if(colD && velY == 0) jumped = false;
  		
- 		movePlayer(velX, velY);
+ 		movePlayer(velX, velY); //applies velocities to the player
  	}
  	
  	public void movePlayer(double x, double y) {player.relocate(x + player.getLayoutX(), y + player.getLayoutY());}
