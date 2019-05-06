@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -15,7 +18,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
@@ -29,7 +31,7 @@ public class Main extends Application {
 	private double velX, velY, lastVX;
 	private final double maxX = 2.0;
 	private final double maxY = 3.0;
-	private final double accelFac = 0.07;
+	private final double accelFac = 0.3;
 	private final int winHeight = 480;
 	private final int winWidth = 632;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
@@ -75,22 +77,26 @@ public class Main extends Application {
 			player.relocate(40, 288);
 			jumped = false;
 						
-			AnimationTimer timer = new AnimationTimer() {
-				@Override
-				public void handle(long now) {
-					double aX = 0.0;
-					double aY = 0.0;
-					double mX = maxX;
-					double mY = maxY;
-					
-					if(mvRight) aX += accelFac;
-					if(mvLeft) aX -= accelFac;
-					if(jumping) aY += accelFac;
-					if(sprinShoo) mX *= 1.6;
-					
-					accelerate(aX, aY, mX, mY);
+			//AnimationTimer timer = new AnimationTimer() {
+				//@Override
+			KeyFrame frame = new KeyFrame(
+				Duration.seconds(0.034),
+				new EventHandler<ActionEvent>() {
+					public void handle(ActionEvent e) {
+						double aX = 0.0;
+						double aY = 0.0;
+						double mX = maxX;
+						double mY = maxY;
+						
+						if(mvRight) aX += accelFac;
+						if(mvLeft) aX -= accelFac;
+						if(jumping) aY += accelFac;
+						if(sprinShoo) mX *= 1.6;
+						
+						accelerate(aX, aY, mX, mY);
+					}
 				}
-			};
+			);
 			
 			scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 	            @SuppressWarnings("incomplete-switch")
@@ -118,8 +124,10 @@ public class Main extends Application {
 	                }
 	            }
 	        });
-			
-			timer.start();
+			Timeline gameloop = new Timeline();
+			gameloop.setCycleCount(Timeline.INDEFINITE);
+			gameloop.getKeyFrames().add(frame);
+			gameloop.play();
 		} catch(Exception e) {e.printStackTrace();}
 	}
  	
@@ -167,15 +175,13 @@ public class Main extends Application {
  		
  		movePlayer(velX, velY); //applies velocities to the player
  	}
- 	
- 	public void movePlayer(double x, double y) {player.relocate(x + player.getLayoutX(), y + player.getLayoutY());}
- 	
- 	public void checkCollision(double velX, double velY) {	//TODO finish this method after completing background creation
+ 		
+ 	public void checkCollision(double velX, double velY) {
  		colR=false;colL=false;colU=false;colD=false;
  		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
  		final double leftEdge = (player.getLayoutX() + velX);
  		final double upEdge = (player.getLayoutY() - velY + 1);
- 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
+ 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) + velY);
  		lastVX = velX;
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
@@ -243,5 +249,7 @@ public class Main extends Application {
  	
  	public Image crSp(String file) {return new Image(getClass().getResourceAsStream("/" + file + ".png"));}
 	
+ 	public void movePlayer(double x, double y) {player.relocate(x + player.getLayoutX(), y + player.getLayoutY());}
+ 	
 	public static void main(String[] args) {launch(args);}
 }
