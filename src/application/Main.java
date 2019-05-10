@@ -29,8 +29,8 @@ public class Main extends Application {
 	private Map<Integer, String[]> sprNames = new TreeMap<>();
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
-	private final double maxX = 2.0;
-	private final double maxY = 3.0;
+	private final double maxX = 3.0;
+	private final double maxY = 5.0;
 	private final double accelFac = 0.3;
 	private final int winHeight = 480;
 	private final int winWidth = 632;
@@ -126,6 +126,7 @@ public class Main extends Application {
 	        });
 			Timeline gameloop = new Timeline();
 			gameloop.setCycleCount(Timeline.INDEFINITE);
+			gameloop.getKeyFrames().clear();
 			gameloop.getKeyFrames().add(frame);
 			gameloop.play();
 		} catch(Exception e) {e.printStackTrace();}
@@ -158,14 +159,6 @@ public class Main extends Application {
  			player.setScaleX(-1);
  		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
- 		
- 		
- 		int offset;	//correct ground clipping after a fast fall
- 		if((colR || colL) && colD && (offset = (int) (player.getLayoutY() % 32)) < 16) {
- 			movePlayer(0.0, -offset - 1);
- 			velX = lastVX;
- 		}
- 		
  		checkCollision(velX, velY); //check for solid bodies that would stop movement
  		if(colR && velX > 0) velX = 0;
  		if(colL && velX < 0) velX = 0;
@@ -175,51 +168,76 @@ public class Main extends Application {
  		
  		movePlayer(velX, velY); //applies velocities to the player
  	}
+ 	
+ 	public void movePlayer(double x, double y) {player.relocate(x + player.getLayoutX(), y + player.getLayoutY());}
+ 	
+ 	public void checkCollision(double velX, double velY) {	//TODO finish this method after completing background creation
+ 		if(colR && velX > 0) velX = 0;
+ 		if(colL && velX < 0) velX = 0;
+ 		if(colU && velY < 0) velY = 0;
+ 		if(colD && velY > 0) velY = 0;
+ 		if(colD && velY == 0) jumped = false;
  		
- 	public void checkCollision(double velX, double velY) {
- 		colR=false;colL=false;colU=false;colD=false;
- 		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
- 		final double leftEdge = (player.getLayoutX() + velX);
- 		final double upEdge = (player.getLayoutY() - velY + 1);
- 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) + velY);
- 		lastVX = velX;
+ 		//find current player boundaries
+ 		//find proposed player boundaries & the tile that is in 
+ 			//if that tile is collidable 
+ 				//find the boundaries of that tile
+ 				//velocity is the difference between that boundary and current player boundary
+ 				//set that collision true
  		
- 		int rightTile = (int) (Math.round(rightEdge) / 32);
- 		if(rightTile == 0)
- 				rightTile += (rightTile / lvlHeight) * lvlWidth;
- 		int leftTile = (int) (Math.round(leftEdge) / 32);
- 		if(leftTile == 0)
- 				leftTile += (leftTile / lvlHeight) * lvlWidth;
- 		int upTile = (int) (Math.round(upEdge) / 32);
- 		if((upTile % lvlHeight) == 0)
- 				upTile += (upTile / lvlHeight) * lvlHeight;
- 		int downTile = (int) (Math.ceil(downEdge) / 32);
- 		if((downTile % lvlHeight) == 0)
- 				downTile += (downTile / lvlHeight) * lvlHeight;
- 		 	 		
- 		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).getCollidable() 
- 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).getCollidable())
- 			colR = true;
- 		
- 		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).getCollidable() 
- 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable() || leftEdge < accelFac)
- 			colL = true;
- 		
- 		rightTile = (int) (Math.round(rightEdge - 1) / 32);
- 		if(rightTile == 0)
- 				rightTile += (rightTile / lvlHeight) * lvlWidth;
- 		leftTile = (int) (Math.round(leftEdge + 1) / 32);
- 		if(leftTile == 0)
- 				leftTile += (leftTile / lvlHeight) * lvlWidth;
- 		downTile = (int) (Math.ceil(downEdge + 1) / 32);
- 		if((downTile % lvlHeight) == 0)
- 				downTile += (downTile / lvlHeight) * lvlHeight;
- 		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).getCollidable() 
- 				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).getCollidable())
- 			colD = true;
- 		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).getCollidable() 
- 				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).getCollidable())
- 			colU = true;
+// 		double offset = player.getLayoutY() % 32.0;	//correct ground clipping after a fast fall
+// 		if((colR || colL) && colD && (offset = (int) (player.getLayoutY() % 32)) < 16) {
+// 			movePlayer(0.0, -offset - 1);
+// 			velX = lastVX;
+// 		}
+// 		System.out.println(offset);
+// 		colR=false;colL=false;colU=false;colD=false;
+// 		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
+// 		final double leftEdge = (player.getLayoutX() + velX);
+// 		final double upEdge = (player.getLayoutY() - velY + 1);
+// 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
+// 		lastVX = velX;
+// 		System.out.println(" " + rightEdge + " " + leftEdge + " " + upEdge + " " + downEdge);
+// 		
+// 		int rightTile = (int) (Math.round(rightEdge) / 32);
+// 		if(rightTile == 0)
+// 				rightTile += (rightTile / lvlHeight) * lvlWidth;
+// 		int leftTile = (int) (Math.round(leftEdge) / 32);
+// 		if(leftTile == 0)
+// 				leftTile += (leftTile / lvlHeight) * lvlWidth;
+// 		int upTile = (int) (Math.round(upEdge) / 32);
+// 		if((upTile % lvlHeight) == 0)
+// 				upTile += (upTile / lvlHeight) * lvlHeight;
+// 		int downTile = (int) (Math.ceil(downEdge) / 32);
+// 		if((downTile % lvlHeight) == 0)
+// 				downTile += (downTile / lvlHeight) * lvlHeight;
+// 		 	 		
+// 		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).getCollidable() 
+// 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).getCollidable())
+// 			colR = true;
+// 		
+// 		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).getCollidable() 
+// 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable() || leftEdge < accelFac)
+// 			colL = true;
+// 		
+// 		rightTile = (int) (Math.round(rightEdge - 1) / 32);
+// 		if(rightTile == 0)
+// 				rightTile += (rightTile / lvlHeight) * lvlWidth;
+// 		leftTile = (int) (Math.round(leftEdge + 1) / 32);
+// 		if(leftTile == 0)
+// 				leftTile += (leftTile / lvlHeight) * lvlWidth;
+// 		downTile = (int) (Math.ceil(downEdge + 1) / 32);
+// 		if((downTile % lvlHeight) == 0)
+// 				downTile += (downTile / lvlHeight) * lvlHeight;
+// 		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).getCollidable() 
+// 				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).getCollidable())
+// 			colD = true;
+// 		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).getCollidable() 
+// 				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).getCollidable())
+// 			colU = true;
+// 		
+// 		if(colD)
+// 			movePlayer(0.0, -offset);
  	}
  	
  	public ArrayList<Node> createBackground(String file) {
@@ -249,7 +267,5 @@ public class Main extends Application {
  	
  	public Image crSp(String file) {return new Image(getClass().getResourceAsStream("/" + file + ".png"));}
 	
- 	public void movePlayer(double x, double y) {player.relocate(x + player.getLayoutX(), y + player.getLayoutY());}
- 	
 	public static void main(String[] args) {launch(args);}
 }
