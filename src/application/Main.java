@@ -178,6 +178,8 @@ public class Main extends Application {
  		if(colD && velY > 0) velY = 0;
  		if(colD && velY == 0) jumped = false;
  		
+ 		//try to skip as much unnecessary things as possible each time to save resources
+ 		
  		//find current player boundaries
  		//find proposed player boundaries & the tile that is in 
  			//if that tile is collidable 
