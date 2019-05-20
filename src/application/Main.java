@@ -160,11 +160,6 @@ public class Main extends Application {
  		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
  		checkCollision(velX, velY); //check for solid bodies that would stop movement
- 		if(colR && velX > 0) velX = 0;
- 		if(colL && velX < 0) velX = 0;
- 		if(colU && velY < 0) velY = 0;
- 		if(colD && velY > 0) velY = 0;
- 		if(colD && velY == 0) jumped = false;
  		
  		movePlayer(velX, velY); //applies velocities to the player
  	}
@@ -177,15 +172,52 @@ public class Main extends Application {
  		if(colU && velY < 0) velY = 0;
  		if(colD && velY > 0) velY = 0;
  		if(colD && velY == 0) jumped = false;
+
+ 		double right = player.getLayoutX() + player.getBoundsInLocal().getWidth();
+ 		double left = player.getLayoutX();
+ 		double top = player.getLayoutY();
+ 		double bottom = player.getLayoutY() + player.getBoundsInLocal().getHeight();
  		
- 		//try to skip as much unnecessary things as possible each time to save resources
+ 		double mvRight = right + velX;
+ 		double mvLeft = left + velX;
+ 		double mvTop = top - velY;
+ 		double mvBottom = bottom - velY;
  		
- 		//find current player boundaries
- 		//find proposed player boundaries & the tile that is in 
- 			//if that tile is collidable 
- 				//find the boundaries of that tile
- 				//velocity is the difference between that boundary and current player boundary
- 				//set that collision true
+ 		int tlIndex = ((int) Math.round(mvLeft) / 32) + (lvlWidth * ((int) Math.round((mvTop) / 32)));
+ 		int trIndex = ((int) Math.round(mvRight) / 32) + (lvlWidth * ((int) Math.round((mvTop) / 32)));
+ 		int blIndex = ((int) Math.round(mvLeft) / 32) + (lvlWidth * ((int) Math.round((mvBottom) / 32)));
+ 		int brIndex = ((int) Math.round(mvRight) / 32) + (lvlWidth * ((int) Math.round((mvBottom) / 32)));
+ 		
+ 		Tile tlTile = (Tile) background.get(tlIndex);
+ 		Tile trTile = (Tile) background.get(trIndex);
+ 		Tile blTile = (Tile) background.get(blIndex);
+ 		Tile brTile = (Tile) background.get(brIndex);
+ 		
+ 		double posVelX = velX;
+ 		double posVelY = velY;
+ 		
+ 		if(velX < 0) {
+ 			if(tlTile.isCollidable()) {posVelX = (tlTile.getLayoutX() + tlTile.getBoundsInLocal().getWidth()) - left; colL = true;}
+ 			if(blTile.isCollidable()) {posVelX = (blTile.getLayoutX() + blTile.getBoundsInLocal().getWidth()) - left; colL = true;}
+ 		}
+ 		else if(velX > 0) {
+ 			if(trTile.isCollidable()) {posVelX = trTile.getLayoutX() - right; colR = true;}
+ 			if(brTile.isCollidable()) {posVelX = brTile.getLayoutX() - right; colR = true;}
+ 		}
+ 		if(velY < 0) {
+ 			if(tlTile.isCollidable()) {posVelY = tlTile.getLayoutY() + top; colU = true;}
+ 			if(trTile.isCollidable()) {posVelY = trTile.getLayoutY() + top; colU = true;}
+ 		}
+ 		else if(velY > 0) {
+ 			if(blTile.isCollidable()) {posVelY = (blTile.getLayoutY() + blTile.getBoundsInLocal().getHeight()) + bottom; colD = true;}
+ 			if(brTile.isCollidable()) {posVelY = (brTile.getLayoutY() + brTile.getBoundsInLocal().getHeight()) + bottom; colD = true;}
+ 		}
+ 		
+ 		if(Math.abs(posVelX) < Math.abs(velX)) {velX = posVelX;}
+ 		if(Math.abs(posVelY) < Math.abs(velY)) {velY = posVelY;}
+ 		
+ 		System.out.println("")
+ 		
  		
 // 		double offset = player.getLayoutY() % 32.0;	//correct ground clipping after a fast fall
 // 		if((colR || colL) && colD && (offset = (int) (player.getLayoutY() % 32)) < 16) {

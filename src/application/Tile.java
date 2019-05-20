@@ -9,7 +9,7 @@ public class Tile extends ImageView{
 		super(i);
 		collidable = c;
 	}
-	public boolean getCollidable() {
+	public boolean isCollidable() {
 		return this.collidable;
 	}
 }
