@@ -183,10 +183,10 @@ public class Main extends Application {
  		double mvTop = top - velY;
  		double mvBottom = bottom - velY;
  		
- 		int tlIndex = ((int) Math.round(mvLeft) / 32) + (lvlWidth * ((int) Math.round((mvTop) / 32)));
- 		int trIndex = ((int) Math.round(mvRight) / 32) + (lvlWidth * ((int) Math.round((mvTop) / 32)));
- 		int blIndex = ((int) Math.round(mvLeft) / 32) + (lvlWidth * ((int) Math.round((mvBottom) / 32)));
- 		int brIndex = ((int) Math.round(mvRight) / 32) + (lvlWidth * ((int) Math.round((mvBottom) / 32)));
+ 		int tlIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
+ 		int trIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
+ 		int blIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
+ 		int brIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
  		
  		Tile tlTile = (Tile) background.get(tlIndex);
  		Tile trTile = (Tile) background.get(trIndex);
@@ -216,7 +216,9 @@ public class Main extends Application {
  		if(Math.abs(posVelX) < Math.abs(velX)) {velX = posVelX;}
  		if(Math.abs(posVelY) < Math.abs(velY)) {velY = posVelY;}
  		
- 		System.out.println("")
+ 		System.out.println("tl: " + tlIndex + " tr: " + trIndex + " bl: " + blIndex + " br: " + brIndex);
+ 		System.out.println("r: " + right + " " + colR + " l: " + left + " " + colL + " t: " + top + " " + colU + " b: " + bottom + " " + colD);
+ 		System.out.println("x: " + velX + " y: " + velY + " mx: " + posVelX + " my: " + posVelY);
  		
  		
 // 		double offset = player.getLayoutY() % 32.0;	//correct ground clipping after a fast fall
