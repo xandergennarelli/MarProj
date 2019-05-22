@@ -144,6 +144,7 @@ public class Main extends Application {
  			velX = Math.copySign(mX, velX);
  		
  		//jump logic
+ 		
 // 		if(velY <= mY * -1 || jumped) { //stops upward acceleration if the player reaches max jump speed or lets go of key
 // 			y = 0;
 // 			jumped = true;
@@ -154,6 +155,7 @@ public class Main extends Application {
 // 			velY += accelFac;
 // 		if(colD || velY < 0) //accelerates the player if they are standing on something or they are already jumping and pressing the key
 // 			velY -= y * 2;
+ 		
  		if(velY <= mY) {velY += accelFac;}
  		if(velY > mY) {velY = mY;}
  		if(jumping && !jumped && colD) {velY = -mY * 1.5; jumped = true;}
@@ -165,14 +167,17 @@ public class Main extends Application {
  		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
  		
+ 		colR = false;
+ 		colL = false;
+ 		colU = false;
+ 		colD = false;
+ 		
+ 		checkCollision(velX, velY); //check for solid bodies that would stop movement
  		if(colR && velX > 0) velX = 0;
  		if(colL && velX < 0) velX = 0;
  		if(colU && velY < 0) velY = 0;
  		if(colD && velY > 0) velY = 0;
  		if(colD && velY == 0) jumped = false;
- 		
- 		checkCollision(velX, velY); //check for solid bodies that would stop movement
- 		
  		movePlayer(velX, velY); //applies velocities to the player
  	}
  	
@@ -181,18 +186,18 @@ public class Main extends Application {
  	public void checkCollision(double velX, double velY) {	//TODO finish this method after completing background creation
  		double right = player.getLayoutX() + player.getBoundsInLocal().getWidth();
  		double left = player.getLayoutX();
- 		double top = player.getLayoutY();
- 		double bottom = player.getLayoutY() + player.getBoundsInLocal().getHeight();
+ 		double top = player.getLayoutY() + 1;
+ 		double bottom = player.getLayoutY() + player.getBoundsInLocal().getHeight() - 7;
  		
-// 		double mvRight = right + velX;
-// 		double mvLeft = left + velX;
-// 		double mvTop = top - velY;
-// 		double mvBottom = bottom - velY;
-// 		
-// 		int tlIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
-// 		int trIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
-// 		int blIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
-// 		int brIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
+ 		double mvRight = right + velX;
+ 		double mvLeft = left + velX;
+ 		double mvTop = top - velY;
+ 		double mvBottom = bottom - velY;
+ 		
+ 		int tlIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
+ 		int trIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
+ 		int blIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
+ 		int brIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
  		
  		
  		
@@ -206,33 +211,25 @@ public class Main extends Application {
  		
  		if(velX < 0) {
  			if(tlTile.isCollidable()) {velX = (tlTile.getLayoutX() + tlTile.getBoundsInLocal().getWidth()) - left; colL = true;}
- 			else {colL = false;}
  			if(blTile.isCollidable()) {posVelX = (blTile.getLayoutX() + blTile.getBoundsInLocal().getWidth()) - left; colL = true;}
- 			else {colL = false;}
  		}
  		else if(velX > 0) {
  			if(trTile.isCollidable()) {velX = trTile.getLayoutX() - right; colR = true;}
- 			else {colR = false;}
  			if(brTile.isCollidable()) {posVelX = brTile.getLayoutX() - right; colR = true;}
- 			else {colR = false;}
  		}
  		if(velY < 0) {
  			if(tlTile.isCollidable()) {velY = tlTile.getLayoutY() - top; colU = true;}
- 			else {colU = false;}
  			if(trTile.isCollidable()) {posVelY = trTile.getLayoutY() - top; colU = true;}
- 			else {colU = false;}
  		}
  		else if(velY > 0) {
  			if(blTile.isCollidable()) {velY = (blTile.getLayoutY() + blTile.getBoundsInLocal().getHeight()) + bottom; colD = true;}
- 			else {colD = false;}
  			if(brTile.isCollidable()) {posVelY = (brTile.getLayoutY() + brTile.getBoundsInLocal().getHeight()) + bottom; colD = true;}
- 			else {colD = false;}
  		}
  		
  		if(Math.abs(posVelX) < Math.abs(velX)) {velX = posVelX;}
- 		if(Math.abs(posVelY) < Math.abs(velY)) {velY = posVelY;}
+ 		if(Math.abs(posVelY) > Math.abs(velY)) {velY = posVelY;}
  		
- 		System.out.println("tl: " + tlIndex + " tr: " + trIndex + " bl: " + blIndex + " br: " + brIndex);
+ 		System.out.println("tl: " + tlIndex + tlTile.isCollidable() + " tr: " + trIndex + trTile.isCollidable() + " bl: " + blIndex + blTile.isCollidable() + " br: " + brIndex + brTile.isCollidable());
  		System.out.println("r: " + right + " " + colR + " l: " + left + " " + colL + " t: " + top + " " + colU + " b: " + bottom + " " + colD);
  		System.out.println("x: " + velX + " y: " + velY + "\n");
  		
