@@ -27,10 +27,11 @@ public class Main extends Application {
 	private Image marSprite;
 	private Node player;
 	private ArrayList<Node> background;
+	private ScrollPane view;
 	private Map<Integer, String[]> sprNames = new TreeMap<>();
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
-	private final double maxX = 3.0;
+	private final double maxX = 4.0;
 	private final double maxY = 5.0;
 	private final double accelFac = 0.3;
 	private final int winHeight = 480;
@@ -57,7 +58,7 @@ public class Main extends Application {
 			pBounds.getChildren().addAll(nodes);
 			relocateBackground();
 			
-			ScrollPane view = new ScrollPane() { public void requestFocus() {}};
+			view = new ScrollPane() { public void requestFocus() {}};
 			view.setPrefSize(winWidth, winHeight);
 			view.setHbarPolicy(ScrollBarPolicy.NEVER);
 			view.setVbarPolicy(ScrollBarPolicy.NEVER);
@@ -143,17 +144,6 @@ public class Main extends Application {
  		if(Math.abs(velX) > mX) //ensures the player does not exceed max speed
  			velX = Math.copySign(mX, velX);
  		
- 		//jump logic
-// 		if(velY <= mY * -1 || jumped) { //stops upward acceleration if the player reaches max jump speed or lets go of key
-// 			y = 0;
-// 			jumped = true;
-// 		}
-// 		if(y == 0) //accelerates the player downwards if they are not accelerating upwards
-// 			velY += accelFac * 1.5;
-// 		else //decelerates the player that is jumping after the acceleration is stopped above
-// 			velY += accelFac;
-// 		if(colD || velY < 0) //accelerates the player if they are standing on something or they are already jumping and pressing the key
-// 			velY -= y * 2;
  		if(velY <= mY) {velY += accelFac;}
  		if(velY > mY) {velY = mY;}
  		if(jumping && !jumped && colD) {velY = -mY * 1.5; jumped = true;}
@@ -165,131 +155,79 @@ public class Main extends Application {
  		else if(velX > 0 + accelFac)
  			player.setScaleX(1);
  		
+ 		checkCollision(velX, velY); //check for solid bodies that would stop movement
+ 		
  		if(colR && velX > 0) velX = 0;
  		if(colL && velX < 0) velX = 0;
  		if(colU && velY < 0) velY = 0;
  		if(colD && velY > 0) velY = 0;
  		if(colD && velY == 0) jumped = false;
  		
- 		checkCollision(velX, velY); //check for solid bodies that would stop movement
- 		
  		movePlayer(velX, velY); //applies velocities to the player
  	}
  	
- 	public void movePlayer(double x, double y) {player.relocate(x + player.getLayoutX(), y + player.getLayoutY());}
+ 	public void movePlayer(double x, double y) {
+ 		player.relocate(x + player.getLayoutX(), y + player.getLayoutY());
+ 		if(player.getLayoutX() > (view.getHvalue() * lvlWidth * 32) + 300 && x > 0)
+ 			view.setHvalue(view.getHvalue() + 0.0005 * x);	
+ 		if(player.getLayoutX() > (view.getHvalue() * lvlWidth * 32) + 100 && x < 0)
+ 			view.setHvalue(view.getHvalue() + 0.0005 * x);
+ 	}
  	
- 	public void checkCollision(double velX, double velY) {	//TODO finish this method after completing background creation
- 		double right = player.getLayoutX() + player.getBoundsInLocal().getWidth();
- 		double left = player.getLayoutX();
- 		double top = player.getLayoutY();
- 		double bottom = player.getLayoutY() + player.getBoundsInLocal().getHeight();
+ 	public void checkCollision(double velX, double velY) {
+ 		double Voffset = player.getLayoutY() % 32.0;	//correct ground clipping after a fast fall
+ 		double Hoffset = player.getLayoutX() % 32.0;
  		
-// 		double mvRight = right + velX;
-// 		double mvLeft = left + velX;
-// 		double mvTop = top - velY;
-// 		double mvBottom = bottom - velY;
-// 		
-// 		int tlIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
-// 		int trIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvTop) / 32))));
-// 		int blIndex = ((int) (Math.round(mvLeft) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
-// 		int brIndex = ((int) (Math.round(mvRight) / 32)) + (lvlWidth * ((int) (Math.round((mvBottom) / 32))));
+ 		colR=false;colL=false;colU=false;colD=false;
+ 		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
+ 		final double leftEdge = (player.getLayoutX() + velX);
+ 		final double upEdge = (player.getLayoutY() - velY + 1);
+ 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
+ 		lastVX = velX;
+ 		System.out.println(" " + rightEdge + " " + leftEdge + " " + upEdge + " " + downEdge);
  		
+ 		int rightTile = (int) (Math.round(rightEdge) / 32);
+ 		if(rightTile == 0)
+ 				rightTile += (rightTile / lvlHeight) * lvlWidth;
+ 		int leftTile = (int) (Math.round(leftEdge) / 32);
+ 		if(leftTile == 0)
+ 				leftTile += (leftTile / lvlHeight) * lvlWidth;
+ 		int upTile = (int) (Math.round(upEdge) / 32);
+ 		if((upTile % lvlHeight) == 0)
+ 				upTile += (upTile / lvlHeight) * lvlHeight;
+ 		int downTile = (int) (Math.ceil(downEdge) / 32);
+ 		if((downTile % lvlHeight) == 0)
+ 				downTile += (downTile / lvlHeight) * lvlHeight;
+ 		 	 		
+ 		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).isCollidable() 
+ 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).isCollidable())
+ 			colR = true;
  		
+ 		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).isCollidable() 
+ 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).isCollidable() || leftEdge < accelFac)
+ 			colL = true;
  		
- 		Tile tlTile = (Tile) background.get(tlIndex);
- 		Tile trTile = (Tile) background.get(trIndex);
- 		Tile blTile = (Tile) background.get(blIndex);
- 		Tile brTile = (Tile) background.get(brIndex);
+ 		rightTile = (int) (Math.round(rightEdge - 1) / 32);
+ 		if(rightTile == 0)
+ 				rightTile += (rightTile / lvlHeight) * lvlWidth;
+ 		leftTile = (int) (Math.round(leftEdge + 1) / 32);
+ 		if(leftTile == 0)
+ 				leftTile += (leftTile / lvlHeight) * lvlWidth;
+ 		downTile = (int) (Math.ceil(downEdge + 1) / 32);
+ 		if((downTile % lvlHeight) == 0)
+ 				downTile += (downTile / lvlHeight) * lvlHeight;
+ 		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).isCollidable() 
+ 				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).isCollidable())
+ 			colD = true;
+ 		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).isCollidable() 
+ 				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).isCollidable())
+ 			colU = true;
  		
- 		double posVelX = velX;
- 		double posVelY = velY;
- 		
- 		if(velX < 0) {
- 			if(tlTile.isCollidable()) {velX = (tlTile.getLayoutX() + tlTile.getBoundsInLocal().getWidth()) - left; colL = true;}
- 			else {colL = false;}
- 			if(blTile.isCollidable()) {posVelX = (blTile.getLayoutX() + blTile.getBoundsInLocal().getWidth()) - left; colL = true;}
- 			else {colL = false;}
- 		}
- 		else if(velX > 0) {
- 			if(trTile.isCollidable()) {velX = trTile.getLayoutX() - right; colR = true;}
- 			else {colR = false;}
- 			if(brTile.isCollidable()) {posVelX = brTile.getLayoutX() - right; colR = true;}
- 			else {colR = false;}
- 		}
- 		if(velY < 0) {
- 			if(tlTile.isCollidable()) {velY = tlTile.getLayoutY() - top; colU = true;}
- 			else {colU = false;}
- 			if(trTile.isCollidable()) {posVelY = trTile.getLayoutY() - top; colU = true;}
- 			else {colU = false;}
- 		}
- 		else if(velY > 0) {
- 			if(blTile.isCollidable()) {velY = (blTile.getLayoutY() + blTile.getBoundsInLocal().getHeight()) + bottom; colD = true;}
- 			else {colD = false;}
- 			if(brTile.isCollidable()) {posVelY = (brTile.getLayoutY() + brTile.getBoundsInLocal().getHeight()) + bottom; colD = true;}
- 			else {colD = false;}
- 		}
- 		
- 		if(Math.abs(posVelX) < Math.abs(velX)) {velX = posVelX;}
- 		if(Math.abs(posVelY) < Math.abs(velY)) {velY = posVelY;}
- 		
- 		System.out.println("tl: " + tlIndex + " tr: " + trIndex + " bl: " + blIndex + " br: " + brIndex);
- 		System.out.println("r: " + right + " " + colR + " l: " + left + " " + colL + " t: " + top + " " + colU + " b: " + bottom + " " + colD);
- 		System.out.println("x: " + velX + " y: " + velY + "\n");
- 		
- 		
-// 		double offset = player.getLayoutY() % 32.0;	//correct ground clipping after a fast fall
-// 		if((colR || colL) && colD && (offset = (int) (player.getLayoutY() % 32)) < 16) {
-// 			movePlayer(0.0, -offset - 1);
-// 			velX = lastVX;
-// 		}
-// 		System.out.println(offset);
-// 		colR=false;colL=false;colU=false;colD=false;
-// 		final double rightEdge = (player.getLayoutX() + player.getBoundsInLocal().getWidth() + velX);
-// 		final double leftEdge = (player.getLayoutX() + velX);
-// 		final double upEdge = (player.getLayoutY() - velY + 1);
-// 		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
-// 		lastVX = velX;
-// 		System.out.println(" " + rightEdge + " " + leftEdge + " " + upEdge + " " + downEdge);
-// 		
-// 		int rightTile = (int) (Math.round(rightEdge) / 32);
-// 		if(rightTile == 0)
-// 				rightTile += (rightTile / lvlHeight) * lvlWidth;
-// 		int leftTile = (int) (Math.round(leftEdge) / 32);
-// 		if(leftTile == 0)
-// 				leftTile += (leftTile / lvlHeight) * lvlWidth;
-// 		int upTile = (int) (Math.round(upEdge) / 32);
-// 		if((upTile % lvlHeight) == 0)
-// 				upTile += (upTile / lvlHeight) * lvlHeight;
-// 		int downTile = (int) (Math.ceil(downEdge) / 32);
-// 		if((downTile % lvlHeight) == 0)
-// 				downTile += (downTile / lvlHeight) * lvlHeight;
-// 		 	 		
-// 		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).getCollidable() 
-// 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).getCollidable())
-// 			colR = true;
-// 		
-// 		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).getCollidable() 
-// 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).getCollidable() || leftEdge < accelFac)
-// 			colL = true;
-// 		
-// 		rightTile = (int) (Math.round(rightEdge - 1) / 32);
-// 		if(rightTile == 0)
-// 				rightTile += (rightTile / lvlHeight) * lvlWidth;
-// 		leftTile = (int) (Math.round(leftEdge + 1) / 32);
-// 		if(leftTile == 0)
-// 				leftTile += (leftTile / lvlHeight) * lvlWidth;
-// 		downTile = (int) (Math.ceil(downEdge + 1) / 32);
-// 		if((downTile % lvlHeight) == 0)
-// 				downTile += (downTile / lvlHeight) * lvlHeight;
-// 		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).getCollidable() 
-// 				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).getCollidable())
-// 			colD = true;
-// 		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).getCollidable() 
-// 				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).getCollidable())
-// 			colU = true;
-// 		
-// 		if(colD)
-// 			movePlayer(0.0, -offset);
+ 		if(colD && Voffset < 16 && Voffset > 2)
+ 			movePlayer(0.0, -Voffset);
+ 		if(colR && Hoffset > 16 && Hoffset < 2)
+ 			movePlayer(Hoffset, 0.0);
+ 		velX = lastVX;
  	}
  	
  	public ArrayList<Node> createBackground(String file) {
