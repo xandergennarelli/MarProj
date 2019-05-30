@@ -38,6 +38,7 @@ public class Main extends Application {
 	private final int winWidth = 632;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
 	private int lvlWidth;
+	private int score;
 	
  	@Override
 	public void start(Stage primaryStage) {
@@ -64,6 +65,8 @@ public class Main extends Application {
 			view.setVbarPolicy(ScrollBarPolicy.NEVER);
 			view.setContent(pBounds);
 			view.addEventFilter(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {public void handle(ScrollEvent event) {event.consume();}});
+			view.setHmin(0);
+			view.setHmax(32);
 			
 			StackPane layers = new StackPane();
 			layers.getChildren().add(view);
@@ -167,11 +170,10 @@ public class Main extends Application {
  	}
  	
  	public void movePlayer(double x, double y) {
+ 		System.out.println("x: " + x + " h: " + view.getHvalue());
  		player.relocate(x + player.getLayoutX(), y + player.getLayoutY());
- 		if(player.getLayoutX() > (view.getHvalue() * lvlWidth * 32) + 300 && x > 0)
- 			view.setHvalue(view.getHvalue() + 0.0005 * x);	
- 		if(player.getLayoutX() > (view.getHvalue() * lvlWidth * 32) + 100 && x < 0)
- 			view.setHvalue(view.getHvalue() + 0.0005 * x);
+ 		if(player.getLayoutX() > (view.getHvalue()) + 380)
+ 			view.setHvalue(view.getHvalue() + (velX / 42));	// not sure the significance of 42 but it is the only way to keep the scroll in sync with mario (it's also the answer to life, the universe, and everything.)
  	}
  	
  	public void checkCollision(double velX, double velY) {
@@ -184,7 +186,6 @@ public class Main extends Application {
  		final double upEdge = (player.getLayoutY() - velY + 1);
  		final double downEdge = (player.getLayoutY() + (player.getBoundsInLocal().getHeight() - 1) - velY);
  		lastVX = velX;
- 		System.out.println(" " + rightEdge + " " + leftEdge + " " + upEdge + " " + downEdge);
  		
  		int rightTile = (int) (Math.round(rightEdge) / 32);
  		if(rightTile == 0)
