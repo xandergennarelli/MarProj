@@ -244,7 +244,6 @@ public class Main extends Application {
 				bg.add(new Tile(crSp(sprNames.get(pixel)[0]), Boolean.parseBoolean(sprNames.get(pixel)[1]), Boolean.parseBoolean(sprNames.get(pixel)[2]), 
 						Boolean.parseBoolean(sprNames.get(pixel)[3]), Integer.parseInt(sprNames.get(pixel)[4])));
 			}
-
  		lvlHeight = h;
  		return bg;
  	}
