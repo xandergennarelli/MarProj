@@ -21,7 +21,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
 
 public class Main extends Application {
 	private Image marSprite;
@@ -38,7 +37,9 @@ public class Main extends Application {
 	private final int winWidth = 632;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
 	private int lvlWidth;
-	private int score;
+	private int score, lastScore;
+	
+	//rip me. Sorry I didn't finish this in time. I hope once this is over you are still able to play mario with having nightmares.
 	
  	@Override
 	public void start(Stage primaryStage) {
@@ -81,6 +82,8 @@ public class Main extends Application {
 			view.setVvalue(92);
 			player.relocate(40, 288);
 			jumped = false;
+			score = 0;
+			lastScore = score;
 						
 			//AnimationTimer timer = new AnimationTimer() {
 				//@Override
@@ -170,7 +173,6 @@ public class Main extends Application {
  	}
  	
  	public void movePlayer(double x, double y) {
- 		System.out.println("x: " + x + " h: " + view.getHvalue());
  		player.relocate(x + player.getLayoutX(), y + player.getLayoutY());
  		if(player.getLayoutX() > (view.getHvalue()) + 380)
  			view.setHvalue(view.getHvalue() + (velX / 42));	// not sure the significance of 42 but it is the only way to keep the scroll in sync with mario (it's also the answer to life, the universe, and everything.)
@@ -232,18 +234,19 @@ public class Main extends Application {
  	}
  	
  	public ArrayList<Node> createBackground(String file) {
- 		sprNames.put(-65536, new String[] {"basicGround", "true", "false", "false", "0"});
- 		sprNames.put(-16711681, new String[] {"emptySky", "false", "false", "false", "0"});
+ 		sprNames.put(-65536, new String[] {"basicGround", "true", "false", "false", "false"});
+ 		sprNames.put(-16711681, new String[] {"emptySky", "false", "false", "false", "false"});
+ 		sprNames.put(-256, new String[] {"coinSky", "false", "false", "false", "true"});
  		ArrayList <Node> bg= new ArrayList<>();
 		Image map = crSp(file);
 		int h = (int) map.getHeight();
 		int w = (int) map.getWidth();
-		
+		System.out.println(map.getPixelReader().getArgb(0, 0));
 		for(int i = 0; i < h; i++)
 			for(int j = 0; j < w; j++) {
 				Integer pixel = map.getPixelReader().getArgb(j, i);
 				bg.add(new Tile(crSp(sprNames.get(pixel)[0]), Boolean.parseBoolean(sprNames.get(pixel)[1]), Boolean.parseBoolean(sprNames.get(pixel)[2]), 
-						Boolean.parseBoolean(sprNames.get(pixel)[3]), Integer.parseInt(sprNames.get(pixel)[4])));
+						Boolean.parseBoolean(sprNames.get(pixel)[3]), Boolean.parseBoolean(sprNames.get(pixel)[4])));
 			}
  		lvlHeight = h;
  		return bg;
