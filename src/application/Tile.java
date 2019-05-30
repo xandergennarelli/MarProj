@@ -4,7 +4,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Tile extends ImageView{
-	private final boolean collidable, powerup, hazard, coin;
+	private final boolean collidable, powerup, hazard;
+	private boolean coin;
 	public Tile(Image i, boolean c, boolean p, boolean h, boolean s) {
 		super(i);
 		collidable = c;
@@ -23,5 +24,8 @@ public class Tile extends ImageView{
 	}
 	public boolean isCoin() {
 		return this.coin;
+	}
+	public void setCoin(boolean coin) {
+		this.coin = coin;
 	}
 }

@@ -9,6 +9,8 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.Group;
@@ -21,6 +23,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 public class Main extends Application {
 	private Image marSprite;
@@ -28,6 +33,7 @@ public class Main extends Application {
 	private ArrayList<Node> background;
 	private ScrollPane view;
 	private Map<Integer, String[]> sprNames = new TreeMap<>();
+	private Text scoreText;
 	private boolean mvLeft, mvRight, jumping, ducking, sprinShoo, colR, colL, colU, colD, jumped;
 	private double velX, velY, lastVX;
 	private final double maxX = 4.0;
@@ -37,7 +43,7 @@ public class Main extends Application {
 	private final int winWidth = 632;
 	private int lvlHeight; //number of tiles rows in the level to divide total number of tiles by to create rows
 	private int lvlWidth;
-	private int score, lastScore;
+	private int score;
 	
 	//rip me. Sorry I didn't finish this in time. I hope once this is over you are still able to play mario with having nightmares.
 	
@@ -69,8 +75,14 @@ public class Main extends Application {
 			view.setHmin(0);
 			view.setHmax(32);
 			
+			scoreText = new Text("Score :: 000000");
+			scoreText.setFont(Font.font("Monospaced", 25));
+			scoreText.setFill(Color.WHITE);
+			
 			StackPane layers = new StackPane();
-			layers.getChildren().add(view);
+			layers.getChildren().addAll(view, scoreText);
+			layers.setMargin(scoreText, new Insets(20));
+			layers.setAlignment(scoreText, Pos.TOP_LEFT);
 			
 			Scene scene = new Scene(layers,winWidth,winHeight);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -83,7 +95,6 @@ public class Main extends Application {
 			player.relocate(40, 288);
 			jumped = false;
 			score = 0;
-			lastScore = score;
 						
 			//AnimationTimer timer = new AnimationTimer() {
 				//@Override
@@ -169,6 +180,8 @@ public class Main extends Application {
  		if(colD && velY > 0) velY = 0;
  		if(colD && velY == 0) jumped = false;
  		
+ 		scoreText.setText(String.format("Score :: %06d", score));
+ 		
  		movePlayer(velX, velY); //applies velocities to the player
  	}
  	
@@ -201,15 +214,19 @@ public class Main extends Application {
  		int downTile = (int) (Math.ceil(downEdge) / 32);
  		if((downTile % lvlHeight) == 0)
  				downTile += (downTile / lvlHeight) * lvlHeight;
+ 		int t1 = 0;
+ 		int t2 = 0;
  		 	 		
- 		if(((Tile) background.get((int) (((upTile) * lvlWidth) + rightTile))).isCollidable() 
- 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + rightTile))).isCollidable())
+ 		if(((Tile) background.get(t1 = (int) (((upTile) * lvlWidth) + rightTile))).isCollidable() 
+ 				|| ((Tile) background.get( t2 = (int) ((downTile * lvlWidth) + rightTile))).isCollidable())
  			colR = true;
- 		
- 		if(((Tile) background.get((int) ((upTile * lvlWidth) + leftTile))).isCollidable() 
- 				|| ((Tile) background.get((int) ((downTile * lvlWidth) + leftTile))).isCollidable() || leftEdge < accelFac)
+ 		checkCoin(t1, t2);
+ 			
+ 		if(((Tile) background.get(t1 = (int) ((upTile * lvlWidth) + leftTile))).isCollidable() 
+ 				|| ((Tile) background.get(t2 = (int) ((downTile * lvlWidth) + leftTile))).isCollidable() || leftEdge < accelFac)
  			colL = true;
- 		
+ 		checkCoin(t1, t2);
+
  		rightTile = (int) (Math.round(rightEdge - 1) / 32);
  		if(rightTile == 0)
  				rightTile += (rightTile / lvlHeight) * lvlWidth;
@@ -219,12 +236,15 @@ public class Main extends Application {
  		downTile = (int) (Math.ceil(downEdge + 1) / 32);
  		if((downTile % lvlHeight) == 0)
  				downTile += (downTile / lvlHeight) * lvlHeight;
- 		if(((Tile) background.get((int) (downTile * lvlWidth) + rightTile)).isCollidable() 
- 				|| ((Tile) background.get((int) (downTile * lvlWidth) + leftTile)).isCollidable())
+ 		if(((Tile) background.get(t1 = (int) (downTile * lvlWidth) + rightTile)).isCollidable() 
+ 				|| ((Tile) background.get(t2 = (int) (downTile * lvlWidth) + leftTile)).isCollidable())
  			colD = true;
- 		if(((Tile) background.get((int) (upTile * lvlWidth) + rightTile)).isCollidable() 
- 				|| ((Tile) background.get((int) (upTile * lvlWidth) + leftTile)).isCollidable())
+ 		checkCoin(t1, t2);
+
+ 		if(((Tile) background.get(t1 = (int) (upTile * lvlWidth) + rightTile)).isCollidable() 
+ 				|| ((Tile) background.get(t2 = (int) (upTile * lvlWidth) + leftTile)).isCollidable())
  			colU = true;
+ 		checkCoin(t1, t2);
  		
  		if(colD && Voffset < 16 && Voffset > 2)
  			movePlayer(0.0, -Voffset);
@@ -233,15 +253,23 @@ public class Main extends Application {
  		velX = lastVX;
  	}
  	
+ 	public void checkCoin(int t1, int t2) {
+ 		if(((Tile) background.get(t1)).isCoin()) {
+ 			score+=100;
+ 			((Tile) background.get(t1)).setImage(crSp("emptySky"));
+ 			((Tile) background.get(t1)).setCoin(false);
+ 		}
+ 	}
+ 	
  	public ArrayList<Node> createBackground(String file) {
  		sprNames.put(-65536, new String[] {"basicGround", "true", "false", "false", "false"});
  		sprNames.put(-16711681, new String[] {"emptySky", "false", "false", "false", "false"});
  		sprNames.put(-256, new String[] {"coinSky", "false", "false", "false", "true"});
- 		ArrayList <Node> bg= new ArrayList<>();
+ 		ArrayList <Node> bg = new ArrayList<>();
 		Image map = crSp(file);
 		int h = (int) map.getHeight();
 		int w = (int) map.getWidth();
-		System.out.println(map.getPixelReader().getArgb(0, 0));
+
 		for(int i = 0; i < h; i++)
 			for(int j = 0; j < w; j++) {
 				Integer pixel = map.getPixelReader().getArgb(j, i);
